@@ -66,4 +66,10 @@ router.get('/getlinks', async (req, res, next)=>{
     });
 }); 
 
+router.get('/', async (req, res, next)=>{
+    res.json({
+        "links": "Welcome to web link crawller api"
+    });
+}); 
+
 export default router;
