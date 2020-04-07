@@ -1,21 +1,28 @@
-var axios = require("axios");
-var cheerio = require("cheerio");
-var fs = require("fs");
-// const root = "https://www.tutorialspoint.com";
-// const root = "https://www.wine.com";
-// const root = 'https://full-circle-solutions.herokuapp.com/';
-const root = "https://primo-liquors-dev.herokuapp.com/store";
+import { Router } from 'express';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+
+interface Attribs {
+    href: string
+}
+interface Link {
+    attribs: Attribs;
+}
+const router: Router = Router();
+
 var visitedLinks = [];
 var listOfLinks = [];
 async function getLinks(url,path='/') {
-    if(path.startsWith(root)){
+
+    if(path.startsWith(url)){
         url = path;
+    }else{
+        url =  url + path
     }
     try {
-        var data = await axios.get(url+path);        
+        var data = await axios.get(url);        
     } catch (error) {
         console.log(url);
-        // console.log("Error occured while axios call",error);
         return false;
     }
     var flag = 0;
@@ -30,33 +37,23 @@ async function getLinks(url,path='/') {
             href = link.attribs.href;
         }
 
-        var linkMatchRe = /^[A-Za-z/]+$/;
-
-        // if(linkMatchRe.test(href)){
             if(listOfLinks.includes(href) === false){
                 visitedLinks.push(href);
                 listOfLinks.push(href);
                 flag = 1;
             }
-        // }
     }
-
     if(flag === 1){
         return true;
     }else{
         return false;
     }
-
 }
 
-function writeDump(dump){
-    fs.writeFile('links.list', dump, function (err) {
-        if (err) return console.log(err);
-        console.log('Hello World > helloworld.txt');
-    });
-}
-
-async function main(){
+router.get('/getlinks', async (req, res, next)=>{
+    const root = req.query.root;
+    console.log("start: ",root)
+    // const root = "http://www.buffalotrace.com/"
     var status = await getLinks(root);
 
     while(status === true){
@@ -64,9 +61,9 @@ async function main(){
         status = await getLinks(root,path);
     }
 
-    listOfLinks = listOfLinks.join().replace(/,/g,'\n');
+    res.json({
+        "links": listOfLinks
+    });
+}); 
 
-    writeDump(listOfLinks);
-}
-main();
-//https://full-circle-solutions.herokuapp.com/
+export default router;
