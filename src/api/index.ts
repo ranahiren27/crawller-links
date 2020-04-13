@@ -52,10 +52,9 @@ async function getLinks(url,path='/') {
 
 router.get('/getlinks', async (req, res, next)=>{
     const root = req.query.root;
-    console.log("start: ",root)
-    // const root = "http://www.buffalotrace.com/"
+    console.log("start: ",root);
+    listOfLinks = [];
     var status = await getLinks(root);
-
     while(status === true){
         var path = visitedLinks.pop();
         status = await getLinks(root,path);
